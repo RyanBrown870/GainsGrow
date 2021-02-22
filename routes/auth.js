@@ -33,7 +33,6 @@ router.post('/register', async (req, res, next) => {
     console.log(user);
 
     res.json(user);
-    // res.redirect('/login');
   } catch (err) {
     console.log(err.message);
     res.status(500).send('Server error');
@@ -43,6 +42,22 @@ router.post('/register', async (req, res, next) => {
 // @route   POST /login
 // @desc    Login user route
 // @access  Public
-router.post('/login', passport.authenticate('local'), (req, res, next) => {});
+router.post(
+  '/login',
+  passport.authenticate('local', {
+    failureRedirect: 'login-failure',
+    successRedirect: 'login-success',
+  })
+);
+
+// Successful login
+router.get('/login-success', (req, res, next) => {
+  res.json({ msg: 'You successfully logged in.' });
+});
+
+// Unsuccessful login
+router.get('/login-failure', (req, res, next) => {
+  res.status(400).json({ msg: 'Invalid credentials' });
+});
 
 module.exports = router;

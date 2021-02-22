@@ -3,6 +3,8 @@ const connectDB = require('./config/db');
 const passport = require('passport');
 const crypto = require('crypto');
 
+require('./services/passport');
+
 connectDB();
 
 const app = express();
