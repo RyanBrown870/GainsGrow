@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const mongoose = require('mongoose');
-const genPassword = require('../services/passwordUtils').genPassword;
+const genPassword = require('../utils/passwordUtils').genPassword;
+const genJwt = require('../utils/genJwt').genJwt;
 
 const User = require('../models/User');
 
@@ -32,7 +33,14 @@ router.post('/register', async (req, res, next) => {
     await user.save();
     console.log(user);
 
-    res.json(user);
+    const jwtToken = genJwt(user);
+
+    res.json({
+      success: true,
+      user: user,
+      token: jwtToken.token,
+      expiresIn: jwtToken.expires,
+    });
   } catch (err) {
     console.log(err.message);
     res.status(500).send('Server error');
@@ -42,13 +50,15 @@ router.post('/register', async (req, res, next) => {
 // @route   POST /login
 // @desc    Login user route
 // @access  Public
-router.post(
-  '/login',
-  passport.authenticate('local', {
-    failureRedirect: 'login-failure',
-    successRedirect: 'login-success',
-  })
-);
+router.post('/login', passport.authenticate('local'), (req, res) => {
+  const jwtToken = genJwt(req.user.id);
+  res.json({
+    success: true,
+    user: req.user,
+    token: jwtToken.token,
+    expiresIn: jwtToken.expires,
+  });
+});
 
 // Successful login
 router.get('/login-success', (req, res, next) => {
