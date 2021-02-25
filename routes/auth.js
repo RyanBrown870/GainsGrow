@@ -10,6 +10,11 @@ router.get('/', async (req, res) => {
   res.send('Auth route');
 });
 
+// Test route to get current user:
+router.get('/current-user', (req, res) => {
+  res.send(req.user);
+});
+
 // @route   POST /register
 // @desc    Regsiter new user route
 // @access  Public
