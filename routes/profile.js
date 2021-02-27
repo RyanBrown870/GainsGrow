@@ -72,4 +72,24 @@ router.post('/', jwtAuth, async (req, res) => {
   }
 });
 
+// @route     GET api/profile/me
+// @desc      Get user's profile
+// @access    Private
+router.get('/me', jwtAuth, async (req, res) => {
+  try {
+    const profile = await Profile.findOne({
+      user: req.user.id,
+    }).populate('user', ['username', 'displayname']);
+
+    if (!profile) {
+      res.status(400).send('No profile found for this user');
+    }
+
+    res.json(profile);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
 module.exports = router;
