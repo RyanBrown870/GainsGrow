@@ -92,4 +92,19 @@ router.get('/me', jwtAuth, async (req, res) => {
   }
 });
 
+// @route     DELETE api/profile
+// @desc      Delete user and the profile
+// @access    Private
+router.delete('/', jwtAuth, async (req, res) => {
+  try {
+    await Profile.findOneAndRemove({ user: req.user.id });
+
+    await User.findOneAndRemove({ _id: req.user.id });
+    res.json({ msg: 'User and profile deleted' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
 module.exports = router;
