@@ -13,7 +13,7 @@ const User = require('../models/User');
 // @access  Public
 router.post('/register', async (req, res, next) => {
   try {
-    let existingUser = await User.findOne({ username: req.body.uname });
+    let existingUser = await User.findOne({ username: req.body.username });
     if (existingUser) {
       return res.status(400).json({ msg: 'This user is already registered.' });
     }
@@ -21,22 +21,30 @@ router.post('/register', async (req, res, next) => {
     // Pull out salt and hash from returned object. Password is on req.body
     const { salt, hash } = genPassword(req.body.pw);
 
-    const user = new User({
-      username: req.body.uname,
-      hash,
-      salt,
-    });
+    const { displayname, firstname, username, lastname } = req.body;
+
+    // Build userFields object
+    const userFields = {};
+    if (displayname) userFields.displayname = displayname;
+    if (username) userFields.username = username;
+    if (firstname) userFields.firstname = firstname;
+    if (lastname) userFields.lastname = lastname;
+    if (salt) userFields.salt = salt;
+    if (hash) userFields.hash = hash;
+
+    const user = new User(userFields);
 
     await user.save();
 
     const jwtToken = genJwt(user.id);
-    const { _id, username } = user;
+    const { _id } = user;
 
     res.json({
       success: true,
       user: {
         _id,
         username,
+        displayname,
       },
       token: jwtToken,
     });
@@ -52,12 +60,13 @@ router.post('/register', async (req, res, next) => {
 router.post('/login', passport.authenticate('local'), (req, res) => {
   const jwtToken = genJwt(req.user.id);
 
-  const { _id, username } = req.user;
+  const { _id, username, displayname } = req.user;
   res.json({
     success: true,
     user: {
       _id,
       username,
+      displayname,
     },
     token: jwtToken,
   });

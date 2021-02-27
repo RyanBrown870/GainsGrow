@@ -8,7 +8,7 @@ const User = require('../models/User');
 // Passport Local
 
 const customFields = {
-  usernameField: 'uname',
+  usernameField: 'username',
   passwordField: 'pw',
 };
 
