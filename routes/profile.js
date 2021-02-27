@@ -53,7 +53,12 @@ router.post('/', jwtAuth, async (req, res) => {
     // Check profile exists
     let profile = await Profile.findOne({ user: req.user.id });
     if (profile) {
-      console.log('User exists');
+      profile = await Profile.findOneAndUpdate(
+        { user: req.user.id },
+        { $set: profileFields },
+        { new: true }
+      );
+      return res.json(profile);
     }
 
     // No profile, create a profile
