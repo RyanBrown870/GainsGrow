@@ -4,17 +4,9 @@ const passport = require('passport');
 const mongoose = require('mongoose');
 const genPassword = require('../utils/passwordUtils').genPassword;
 const genJwt = require('../utils/genJwt').genJwt;
+const jwtAuth = require('../middleware/jwtAuth');
 
 const User = require('../models/User');
-
-router.get('/', async (req, res) => {
-  res.send('Auth route');
-});
-
-// Test route to get current user:
-router.get('/current-user', (req, res) => {
-  res.send(req.user);
-});
 
 // @route   POST /register
 // @desc    Regsiter new user route
@@ -36,15 +28,17 @@ router.post('/register', async (req, res, next) => {
     });
 
     await user.save();
-    console.log(user);
 
-    const jwtToken = genJwt(user);
+    const jwtToken = genJwt(user.id);
+    const { _id, username } = user;
 
     res.json({
       success: true,
-      user: user,
-      token: jwtToken.token,
-      expiresIn: jwtToken.expires,
+      user: {
+        _id,
+        username,
+      },
+      token: jwtToken,
     });
   } catch (err) {
     console.log(err.message);
@@ -57,22 +51,22 @@ router.post('/register', async (req, res, next) => {
 // @access  Public
 router.post('/login', passport.authenticate('local'), (req, res) => {
   const jwtToken = genJwt(req.user.id);
+
+  const { _id, username } = req.user;
   res.json({
     success: true,
-    user: req.user,
-    token: jwtToken.token,
-    expiresIn: jwtToken.expires,
+    user: {
+      _id,
+      username,
+    },
+    token: jwtToken,
   });
 });
 
-// Successful login
-router.get('/login-success', (req, res, next) => {
-  res.json({ msg: 'You successfully logged in.' });
-});
-
-// Unsuccessful login
-router.get('/login-failure', (req, res, next) => {
-  res.status(400).json({ msg: 'Invalid credentials' });
+// Protected Test Route
+router.get('/protected', jwtAuth, async (req, res) => {
+  const user = await User.findById(req.user.id);
+  res.send(user);
 });
 
 module.exports = router;
