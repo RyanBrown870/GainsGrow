@@ -72,10 +72,4 @@ router.post('/login', passport.authenticate('local'), (req, res) => {
   });
 });
 
-// Protected Test Route
-router.get('/protected', jwtAuth, async (req, res) => {
-  const user = await User.findById(req.user.id);
-  res.send(user);
-});
-
 module.exports = router;
