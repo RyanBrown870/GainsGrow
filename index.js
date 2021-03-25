@@ -3,10 +3,7 @@ const connectDB = require('./config/db');
 const mongoose = require('mongoose');
 const passport = require('passport');
 const crypto = require('crypto');
-const session = require('express-session');
 const keys = require('./config/dev');
-
-const MongoStore = require('connect-mongo').default;
 
 require('./services/passport');
 
@@ -17,21 +14,6 @@ const app = express();
 
 app.use(express.json({ extended: false }));
 app.use(express.urlencoded({ extended: true }));
-
-// Express session middleware
-app.use(
-  session({
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24,
-    },
-    resave: false,
-    saveUninitialized: true,
-    secret: keys.sessionSecret,
-    store: MongoStore.create({
-      mongoUrl: keys.mongoURI,
-    }),
-  })
-);
 
 // Passport middleware
 
@@ -45,6 +27,7 @@ app.get('/', (req, res) => {
 
 // Define routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/profile', require('./routes/profile'));
 
 const PORT = process.env.PORT || 5000;
 
