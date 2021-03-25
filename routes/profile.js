@@ -107,4 +107,35 @@ router.delete('/', jwtAuth, async (req, res) => {
   }
 });
 
+// @route     PUT api/profile/measurements
+// @desc      Update profile measurements
+// @access    Private
+router.put('/measurements', jwtAuth, async (req, res) => {
+  const { height, weight, bodyfat, bmi, chest, waist, bicep } = req.body;
+  const measurementsFields = {};
+
+  if (height) measurementsFields.height = height;
+  if (weight) measurementsFields.weight = weight;
+  if (bodyfat) measurementsFields.bodyfat = bodyfat;
+  if (bmi) measurementsFields.bmi = bmi;
+  if (chest) measurementsFields.chest = chest;
+  if (waist) measurementsFields.waist = waist;
+  if (bicep) measurementsFields.bicep = bicep;
+
+  try {
+    const profile = await Profile.findOne({ user: req.user.id });
+    console.log('profile', profile);
+    console.log('user id', req.user.id);
+    if (!profile) {
+      return res.status(400).json({ msg: 'Profile not found for this user' });
+    }
+    profile.measurements.unshift(measurementsFields);
+    await profile.save();
+    res.json(profile);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 module.exports = router;
